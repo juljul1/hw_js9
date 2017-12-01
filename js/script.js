@@ -5,6 +5,7 @@ const popularBtn  =  document.querySelector('.category__popular'),
       topBtn      =  document.querySelector('.category__top'),
       darkBtn     =  document.querySelector('.theme-style__dark'),
       lightBtn    =  document.querySelector('.theme-style__ligth'),
+      linkTag     =  document.querySelector('link'),
       gallery     =  document.querySelector('.output-gallery'),
       scriptCart  =  document.querySelector('#template').textContent.trim(),
       err         =  document.querySelector('#err');
@@ -15,22 +16,16 @@ const searchByNameUrl   = `https://api.themoviedb.org/3/search/movie?${apiKey}`,
       searchLatestUrl   = `https://api.themoviedb.org/3/movie/latest?${apiKey}`,
       searchTopUrl      = `https://api.themoviedb.org/3/movie/top_rated?${apiKey}`;
 
-const clearGallery = () => {
-    document.querySelectorAll('.movie-elem').forEach((elem) => {
-        elem.remove();
-    });
-}
-
 const templates = _.template(scriptCart);
 
 const searchByName = (urlValue, page = '', query = 'movie') => {
   let url = `${urlValue}${page}${query}`;
-  clearGallery();
   err.innerHTML = '';
-    if (searchInput.value == ''){
+  gallery.innerHTML = '';
+    if (searchInput.value === ''){
       alert('Please, fill the search input');
     }
-  return fetch(url)
+    fetch(url)
      .then(response => {
     if (response.ok) {
       return response.json();
@@ -42,8 +37,10 @@ const searchByName = (urlValue, page = '', query = 'movie') => {
         const videos = data.results;
         let htmlString = '';
            videos.forEach(elem => {
+              elem.poster_path = `https://image.tmdb.org/t/p/w500${elem.poster_path}`;
+              elem.overview = `${elem.overview.slice(0, 99)}...`
             htmlString += templates(elem);
-          })
+          });
           gallery.innerHTML += htmlString;
         }else{
           alert(`No result for your search ${searchInput.value}`);
@@ -55,7 +52,6 @@ const searchByName = (urlValue, page = '', query = 'movie') => {
 };
 
 const themeOption = (theme = 'light') => {
-    let linkTag = document.querySelector('link');
     linkTag.setAttribute('href', `css/style_${theme}.css`);
     if (theme == 'light') {
         localStorage.setItem('theme', 'light');
@@ -69,7 +65,7 @@ const themeOption = (theme = 'light') => {
 }
 
 window.addEventListener('load',(e) => {
-    themeOption(localStorage.getItem('theme' || 'light'));
+    themeOption(localStorage.getItem('theme') || 'light');
 });
 searchBtn.addEventListener("click", (e) => {
     searchByName(searchByNameUrl, '' , `&query=${searchInput.value}`);
